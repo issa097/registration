@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <form id="contactForm">
+      <label for="Username">Username</label>
+      <input type="text" id="Username" name="Username" pattern="[^\s]+" />
+      <p id="usernameError" class="error"></p>
+
+      <label for="Password">Password</label>
+      <input
+        type="password"
+        id="Password"
+        name="Password"
+        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+      />
+      <p id="passwordError" class="error"></p>
+
+      <label for="Email">Email</label>
+      <input type="email" id="Email" name="Email" />
+      <p id="emailError" class="error"></p>
+
+      <label for="PhoneNumber">Phone Number</label>
+      <input type="tel" id="PhoneNumber" name="PhoneNumber" />
+      <p id="phoneError" class="error"></p>
+
+      <button type="button" id="signup">Submit</button>
+    </form>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.1/firebase-firestore-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBSq4GLxpuX4F7DVtgtLg5rKx4pI3wB1Oc",
+        authDomain: "issa-1ccbd.firebaseapp.com",
+        databaseURL: "https://issa-1ccbd-default-rtdb.firebaseio.com",
+        projectId: "issa-1ccbd",
+        storageBucket: "issa-1ccbd.appspot.com",
+        messagingSenderId: "490623612146",
+        appId: "1:490623612146:web:23ccc1347abc8b6330cc6b",
+      };
+
+      const app = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+
+      document.getElementById("signup").addEventListener("click", function () {
+        const Username = document.getElementById("Username").value;
+        const password = document.getElementById("Password").value;
+        const email = document.getElementById("Email").value;
+        const number = document.getElementById("PhoneNumber").value;
+
+        // Create user with email and password
+        auth
+          .createUserWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            console.log(user);
+
+            // Save user data to Firestore
+            return db.collection("users").doc(email).set({
+              Username: Username,
+              password: password,
+              email: email,
+              number: number,
+            });
+          })
+          .then(() => {
+            console.log("User data saved to Firestore successfully.");
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.error(`${errorCode}: ${errorMessage}`);
+          });
+
+          function validateName(name) {
+          if (name.trim() === "") {
+            document.getElementById("usernameError").textContent =
+              "Please enter your username";
+            return false;
+          } else {
+            document.getElementById("usernameError").textContent = "";
+            return true;
+          }
+        }
+
+        function validatePassword(password) {
+          if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*)(?=.*[\W_]).{8,}/.test(password)) {
+            document.getElementById("passwordError").innerHTML =
+              "Password must be at least 8 characters with 1 number, 1 uppercase, and 1 lowercase. sc";
+            return false;
+          } else {
+            document.getElementById("passwordError").innerHTML = "";
+            return true;
+          }
+        }
+
+        function validateEmail(email) {
+          if (!/^\S+@\S+\.\S+$/.test(email)) {
+            document.getElementById("emailError").innerHTML =
+              "Please enter a valid email address";
+            return false;
+          } else {
+            document.getElementById("emailError").innerHTML = "";
+            return true;
+          }
+        }
+
+        function validatePhone(phone) {
+          if (!/^07\d{8}$/.test(phone)) {
+            document.getElementById("phoneError").innerHTML =
+              "Phone number must start with 07 and be 10 digits long";
+            return false;
+          } else {
+            document.getElementById("phoneError").innerHTML = "";
+            return true;
+          }
+        }
+
+        // Check all fields and only proceed if they are valid
+        if (
+          validateName(Username) &&
+          validatePassword(password) &&
+          validateEmail(email) &&
+          validatePhone(number)
+        );
+    });
+    </script>
+  </body>
+</html>
